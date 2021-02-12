@@ -1,0 +1,54 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: LARAVEL CI
+
+on:
+  push:
+    branches: [ main,master ]
+  pull_request:
+    branches: [ main,master ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    name: Tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache/files
+          key: dependencies-composer-${{ hashFiles('composer.json') }}
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.3
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          coverage: none
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-suggest
+      - name: Install NPM dependencies
+        run: npm install
+      - name: Compile assets
+        run: npm run production
+      - name: Execute tests
+        run: vendor/bin/phpunit --verbose
+
+  deploy:
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      runs-on: [ubuntu-latest]
+      
+      steps:
+      - uses: actions/checkout@v1
+      - name: Push to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull &&  composer install --prefer-dist --no-interaction --no-suggest && npm install
+
+
