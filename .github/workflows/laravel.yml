@@ -28,7 +28,7 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
           coverage: none
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-suggest
+        run: composer install  --no-interaction
       - name: Install NPM dependencies
         run: npm install
       - name: Compile assets
@@ -49,6 +49,5 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          script: cd ${{ secrets.PROJECT_PATH }} && git pull &&  composer install --prefer-dist --no-interaction --no-suggest && npm install
-
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull &&  composer install  --no-interaction && npm install
 
